@@ -15,37 +15,24 @@ module.exports = () => {
       path: path.resolve(__dirname, 'dist'),
     },
     plugins: [
-      new HtmlWebpackPlugin({
-        template: './src/index.html',
-      }),
-      new WebpackPwaManifest({
-        name: 'My Progressive Web App',
-        short_name: 'MyPWA',
-        description: 'My awesome Progressive Web App!',
-        background_color: '#ffffff',
-        crossorigin: 'use-credentials', // can be null, use-credentials or anonymous
-      }),
-      new InjectManifest({
-        swSrc: './src/src-sw.js',
-        swDest: 'src-sw.js',
-      }),
+     
     ],
     module: {
       rules: [
         {
-          test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
+          test: /\.css$/, // Regex for matching .css files
+          use: ['style-loader', 'css-loader'] // Order matters. css-loader interprets and resolves imports in CSS. style-loader injects the CSS into the DOM.
         },
         {
-          test: /\.js$/,
-          exclude: /node_modules/,
+          test: /\.js$/, // Match .js files
+          exclude: /node_modules/, // Exclude the node_modules folder
           use: {
-            loader: 'babel-loader',
+            loader: 'babel-loader', // Use babel-loader for transpiling JavaScript
             options: {
-              presets: ['@babel/preset-env'],
-            },
-          },
-        },
+              presets: ['@babel/preset-env'] // Use the preset for latest ECMAScript features
+            }
+          }
+        }
       ],
     },
   };

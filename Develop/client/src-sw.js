@@ -1,14 +1,12 @@
+const { offlineFallback, warmStrategyCache } = require('workbox-recipes');
 const { CacheFirst } = require('workbox-strategies');
 const { registerRoute } = require('workbox-routing');
 const { CacheableResponsePlugin } = require('workbox-cacheable-response');
 const { ExpirationPlugin } = require('workbox-expiration');
 const { precacheAndRoute } = require('workbox-precaching/precacheAndRoute');
-const { offlineFallback } = require('workbox-recipes');
 
-// Precache assets
 precacheAndRoute(self.__WB_MANIFEST);
 
-// Cache for pages
 const pageCache = new CacheFirst({
   cacheName: 'page-cache',
   plugins: [
@@ -21,44 +19,41 @@ const pageCache = new CacheFirst({
   ],
 });
 
-// Register route for navigational requests
+warmStrategyCache({
+  urls: ['/index.html', '/'],
+  strategy: pageCache,
+});
+offlineFallback({
+  caches: {
+    precache: 'precache',
+    runtime: 'runtime-cache'
+  },
+  fallbackURL: '/'
+});
+
 registerRoute(({ request }) => request.mode === 'navigate', pageCache);
 
-// Cache CSS and JavaScript files
+// TODO: Implement asset caching
+// Cache CSS and JavaScript Files
 registerRoute(
-  ({ request }) =>
-    request.destination === 'script' || request.destination === 'style',
+  /\.(?:js|css)$/,
   new CacheFirst({
     cacheName: 'static-resources',
     plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 30 * 24 * 60 * 60,
-      }),
-    ],
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 })
+    ]
   })
 );
 
-// Cache image files
+// Cache Images
 registerRoute(
-  ({ request }) => request.destination === 'image',
+  /\.(?:png|jpg|jpeg|svg|gif)$/,
   new CacheFirst({
-    cacheName: 'image-cache',
+    cacheName: 'images',
     plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 30 * 24 * 60 * 60,
-        maxEntries: 50,
-      }),
-    ],
-  // Fallback to show when offline
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 30 * 24 * 60 * 60 })
+    ]
   })
 );
-offlineFallback({
-  pageFallback: '/Develop/client/index.html', // The URL to the offline fallback page
-  imageFallback: '/Develop/client/src/images/logo.png',  // Optional: fallback image to show when offline
-});
