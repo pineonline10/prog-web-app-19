@@ -1,45 +1,27 @@
-const butInstall = document.getElementById('buttonInstall');
-let deferredPrompt; // This will store the event to use later
+const butInstall = document.getElementById("buttonInstall");
 
-// Handling the `beforeinstallprompt` Event
-window.addEventListener('beforeinstallprompt', (event) => {
-  // Prevent Chrome 67 and earlier from showing the default prompt
-  event.preventDefault();
-
-  // Save the event for later use
-  deferredPrompt = event;
-
-  // Show the install button to the user
-  butInstall.style.display = 'block';
+// Logic for installing the PWA
+// TODO: Add an event handler to the `beforeinstallprompt` event
+window.addEventListener("beforeinstallprompt", (event) => {
+  window.deferredPrompt = event;
+  butInstall.classList.toggle("hidden", false);
 });
 
-// Implementing the Click Event Handler for the Install Button
-butInstall.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    // Show the install prompt to the user
-    deferredPrompt.prompt();
-
-    // Wait for the user's response
-    const choiceResult = await deferredPrompt.userChoice;
-
-    if (choiceResult.outcome === 'accepted') {
-      console.log('User accepted the installation');
-    } else {
-      console.log('User declined the installation');
-    }
-
-    // Clear the saved prompt event
-    deferredPrompt = null;
-
-    // Hide the install button
-    butInstall.style.display = 'none';
+// TODO: Implement a click event handler on the `butInstall` element
+butInstall.addEventListener("click", async () => {
+    console.log("clicked");
+  const promptEvent = window.deferredPrompt;
+  if (!promptEvent) {
+    return;
   }
+  promptEvent.prompt();
+  // Reset the deferred prompt variable, it can only be used once.
+  window.deferredPrompt = null;
+  butInstall.classList.toggle("hidden", true);
 });
 
-// Handling the `appinstalled` Event
-window.addEventListener('appinstalled', (event) => {
-  console.log('App successfully installed!', event);
-
-  // Optionally, hide the install button as the app is now installed
-  butInstall.style.display = 'none';
+// TODO: Add an handler for the `appinstalled` event
+window.addEventListener("appinstalled", (event) => {
+  // Clear prompt
+  window.deferredPrompt = null;
 });
